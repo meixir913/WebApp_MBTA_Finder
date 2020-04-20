@@ -8,8 +8,8 @@ MAPQUEST_BASE_URL = "http://www.mapquestapi.com/geocoding/v1/address"
 MBTA_BASE_URL = "https://api-v3.mbta.com/stops"
 
 # Your API KEYS (you need to use your own keys - very long random characters)
-MAPQUEST_API_KEY = ""
-MBTA_API_KEY = ""
+MAPQUEST_API_KEY = "nX6Fc2eiTt0uft5mvC29XJG5u0l0rI3E"
+MBTA_API_KEY = "57d4dc09a2f8491ba4ed4cdca1d065c2"
 
 
 # A little bit of scaffolding if you want to use it
@@ -20,7 +20,9 @@ def get_json(url):
     We did similar thing in the previous assignment.
     """
 
-    response_data = ...
+    f = urllib.request.urlopen(url)
+    response_text = f.read().decode('utf-8')
+    response_data = json.loads(response_text)
     return response_data
 
 
@@ -33,14 +35,13 @@ def get_lat_long(place_name):
     """
     place = place_name.replace(' ', '%20')
     url = f'{MAPQUEST_BASE_URL}?key={MAPQUEST_API_KEY}&location={place}'
-    # print(url) # uncomment to test the url in browser
+    #print(url) # uncomment to test the url in browser
     place_json = get_json(url)
-    # pprint(place_json)
-    lat = place_json[...][...] # modify this so you get the correct latitude
-    lon = place_json[...][...] # modify this so you get the correct longitude
+    pprint(place_json)
+    lat = place_json['results'][0]['locations'][0]['latLng']['lat'] # modify this so you get the correct latitude
+    lon = place_json['results'][0]['locations'][0]['latLng']['lng'] # modify this so you get the correct longitude
 
     return lat, lon
-
 
 def get_nearest_station(latitude, longitude):
     """
@@ -49,16 +50,15 @@ def get_nearest_station(latitude, longitude):
     See https://api-v3.mbta.com/docs/swagger/index.html#/Stop/ApiWeb_StopController_index for URL
     formatting requirements for the 'GET /stops' API.
     """
-
-    url = f'{MBTA_BASE_URL}?api_key={MBTA_API_KEY}&filter[latitude]={latitude}&filter[longitude]={longitude}&sort=distance'
-    # print(url) # uncomment to test the url in browser
+    url = f'https://api-v3.mbta.com/stops?api_key={MBTA_API_KEY}&filter[latitude]={latitude}&filter[longitude]={longitude}&sort=distance'
+    #print(url) # uncomment to test the url in browser
     station_json = get_json(url)
-    # pprint(station_json) # uncomment to see the json data
-    station_name = station_json[...][...] # modify this so you get the correct station name
-    # print(station_name) # uncomment to check it
+    #pprint(station_json) # uncomment to see the json data
+    station_name = station_json['data'][0]['attributes']['name'] # modify this so you get the correct station name
+    print(station_name) # uncomment to check it
 
     # try to find out where the wheelchair_boarding information is
-    wheelchair_boarding = ...
+    wheelchair_boarding = station_json['data'][0]['attributes']['wheelchair_boarding']
 
     return station_name, wheelchair_boarding
 
@@ -84,4 +84,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+    get_nearest_station(*get_lat_long("Fenway Park"))
+
 
